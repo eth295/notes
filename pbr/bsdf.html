@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>bsdf.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.js" integrity="sha384-K3vbOmF2BtaVai+Qk37uypf7VrgBubhQreNQe9aGsz9lB63dIFiQVlJbr92dw2Lx" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/contrib/auto-render.min.js" integrity="sha384-kmZOZB5ObwgQnS/DuDg6TScgOiWWBiVt0plIRkZCmE6rDZGrEOQeHM5PcHi+nyqe" crossorigin="anonymous"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+      ]
+    });
+  });
+</script>
+</head>
+<body>
+<h1 id="bsdf%E3%81%AE%E5%AE%9A%E7%BE%A9%E3%81%A8%E5%8F%8D%E5%B0%84%E7%8E%87%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">BSDFの定義と反射率について</h1>
+<p>光のエネルギーとBSDFの定義と反射率についての内容です．</p>
+<h2 id="%E8%A8%98%E5%8F%B7%E4%B8%80%E8%A6%A7">記号一覧</h2>
+<p>ここで利用する記号と意味の表．</p>
+<table>
+<thead>
+<tr>
+<th>記号</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$x$</td>
+<td>位置</td>
+</tr>
+<tr>
+<td>$x'$</td>
+<td>入射光の位置</td>
+</tr>
+<tr>
+<td>$\vec{n}$</td>
+<td>xにおける法線（常に正規化されている）</td>
+</tr>
+<tr>
+<td>$\vec{\omega}$</td>
+<td>方向（表面から離れる方向）</td>
+</tr>
+<tr>
+<td>$\vec{\omega}'$</td>
+<td>放射輝度（radiance）の入射方向（表面から離れる方向）</td>
+</tr>
+<tr>
+<td>$d\vec{\omega}$</td>
+<td>立体角の微分</td>
+</tr>
+<tr>
+<td>$(\theta,\phi)$</td>
+<td>極座標系における方向</td>
+</tr>
+<tr>
+<td>$L$</td>
+<td>放射輝度</td>
+</tr>
+<tr>
+<td>$L(x,\vec{\omega})$</td>
+<td>位置xにおける$\vec{\omega}$方向の放射輝度</td>
+</tr>
+<tr>
+<td>$L(x,\vec{\omega}')$</td>
+<td>位置xに$\vec{\omega}$方向から入射する放射輝度</td>
+</tr>
+<tr>
+<td>$L(x' \rightarrow x)$</td>
+<td>位置x'からx方向に出射される放射輝度</td>
+</tr>
+<tr>
+<td>$L_{e}$</td>
+<td>放射された（emitted）放射輝度</td>
+</tr>
+<tr>
+<td>$L_{r}$</td>
+<td>反射された（reflected）放射輝度</td>
+</tr>
+<tr>
+<td>$L_{i}$</td>
+<td>入射する（incident）放射輝度</td>
+</tr>
+<tr>
+<td>$\Phi$</td>
+<td>放射束（flux）</td>
+</tr>
+<tr>
+<td>$E$</td>
+<td>放射照度（irradiance）</td>
+</tr>
+<tr>
+<td>$f_{r}$</td>
+<td>双方向反射率分布関数（BRDF）</td>
+</tr>
+<tr>
+<td>$f_{d}$</td>
+<td>拡散（diffuse）BRDF</td>
+</tr>
+<tr>
+<td>$f_{s}$</td>
+<td>鏡面（specular）BRDF</td>
+</tr>
+<tr>
+<td>$\rho$</td>
+<td>反射率（reflectance）</td>
+</tr>
+<tr>
+<td>$\Omega$</td>
+<td>方向を表す半球（hemisphere）</td>
+</tr>
+<tr>
+<td>$\eta$</td>
+<td>屈折率（index of refraction）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="%E6%94%BE%E5%B0%84%E6%9D%9F">放射束</h2>
+<p>光の基本単位は光子（photon）．
+放射エネルギー（radiant energy）$Q$ は，光子が集まったエネルギー．
+このエネルギーを単位時間あたりで表したものが放射束．$\phi$で表記する．</p>
+<p>$$
+\Phi = \frac{\Delta Q}{\Delta d} = \frac{dQ}{dt}
+$$</p>
+<h2 id="%E6%94%BE%E5%B0%84%E7%85%A7%E5%BA%A6irradiacne">放射照度（Irradiacne）</h2>
+<p>放射照度$E$は単位面積あたりの放射束．
+ある面積$A$に到達する放射束を$\Phi$とすると，放射照度$E$は次のようになる．</p>
+<p>$$
+E = \frac{\Phi}{A}
+$$</p>
+<p>ある位置 x に入ってくる放射照度は次のようになる．</p>
+<p>$$
+E(x) = \frac{d \Phi}{dA}
+$$</p>
+<p><img src="https://qiita-image-store.s3.amazonaws.com/0/133092/6df81f29-703c-1386-b7b4-5d6f0150c527.png" alt="tuto-pbr-irradiance.png"></p>
+<h2 id="%E7%AB%8B%E4%BD%93%E8%A7%92">立体角</h2>
+<p>立体角は，方向と光線の角度的な大きさを表す．
+立体角の単位はステラジアン[sr]．
+立体角は平面角を３次元に拡張したものと考えることができ，面角$\theta$は，円上に張られた弧の長さ$l$を円の半径 $r$で割ったもの．</p>
+<p>$$
+\theta = \frac{l}{r}
+$$</p>
+<p><img src="https://qiita-image-store.s3.amazonaws.com/0/133092/f1fdf5f4-43d1-1bba-b777-73690f5d12e3.png" alt="tuto-pbr-radian.png"></p>
+<p>これを３次元で考えると，半径$r$の球面上の面積$A$に対応する立体角$\omega$は$\omega = A/r^2$．
+球の面積は$4\pir^2$のため，球全体の立体角は$4\pi$ステラジアンになる．</p>
+<p><img src="https://qiita-image-store.s3.amazonaws.com/0/133092/6b3b6698-8b59-5e0b-37d1-61d4a9c192dc.png" alt="tuto-pbr-solid-angle.png"></p>
+<p>この方向と大きさは，球面座標（$ \theta, \phi $）を用いて表現することができます．ここで，点&lt; $r,\theta,\phi$ &gt;における微小表面積を考えてみます．</p>
+<p><img src="https://qiita-image-store.s3.amazonaws.com/0/133092/7eab105e-db29-0369-9208-0d73700c2952.png" alt="tuto-pbr-solid-angle-polar.png"></p>
+<p>極角 $\theta$ における円（点&lt; $r,\theta, \phi$ &gt;を通る x-y 平面に平行な円：図の赤い円）の半径は $r\sin\theta$ ですので，この円上の方位角方向の微小弧長 a は $r \sin \theta d\phi$ となります．そして，極角方向の微小弧長 b は $r d\theta$ となります．</p>
+<p><img src="https://qiita-image-store.s3.amazonaws.com/0/133092/18a97401-e1f0-cdbf-b2f6-85d6fbd4de03.png" alt="tuto-pbr-solid-angle-area.png"></p>
+<p>最終的に球面上の点&lt; $r,\theta,\phi$ &gt;における微小表面積は次のようになります．</p>
+<pre class="hljs"><code><div>\begin{align}
+dA &amp;= ab \\
+&amp;= r \sin \theta d\phi \times r d \theta \\
+&amp;= r^2 \sin \theta d\theta d\phi
+\end{align}
+</div></code></pre>
+<p>半径 $r$ の球面上の面積 $A$ に対する立体角 $\omega$ は，$\omega = A/r^2$ でしたので，微小立体角は次のようになります．</p>
+<pre class="hljs"><code><div>\begin{align}
+d\vec{\omega} &amp;= \frac{dA}{r^2} \\
+&amp;= \frac{r^2 \sin \theta d\theta d\phi}{r^2} \\
+&amp;= \sin \theta d \theta d \phi
+\end{align}
+</div></code></pre>
+<h2 id="%E6%94%BE%E5%B0%84%E5%BC%B7%E5%BA%A6">放射強度</h2>
+<p>放射強度（radiant intensity）$I$は，単位立体角（$\omega$）あたりの放射束．</p>
+<p>$$
+I(\vec{\omega}) = \frac{d \Phi}{d \vec{\omega}}
+$$</p>
+<p>放射強度は一定の方向に，どの程度の放射束が放出されているのかを表す．</p>
+<h2 id="%E6%94%BE%E5%B0%84%E8%BC%9D%E5%BA%A6">放射輝度</h2>
+<p>放射輝度（radiance）$L$は，単位立体角あたり，単位投影面積あたりの放射束．
+単位投影面積$\cos\theta dA$は，光が進む方向に直交する面へ単位面積を投影したもので，放射輝度はこの単位投影面積で放射強度を割った値．</p>
+<p>$$
+L(x,\vec{\omega}) = \frac{d^2 \Phi}{\cos \theta dA d \vec{\omega}}
+$$</p>
+<p>物体表面における入射してくる放射輝度がわかっていれば，半球面上のすべての方向 $\Omega$と物体表面の領域$A$ で積分することにより，放射束を計算することができる．</p>
+<p>$$
+\Phi = \int_{A} \int_{\Omega} L(x,\vec{\omega}')(\vec{\omega}' \cdot \vec{n}) d \vec{\omega}' dx
+$$</p>
+<h2 id="brdf">BRDF</h2>
+<p>双方向反射率分布関数（bidirectional reflectance distribution function：BRDF）．</p>
+<p>BRDF$f_{r}$は，反射される放射輝度と放射照度の関係を以下のように定義する．</p>
+<p>$$
+f_{r}(x,\vec{\omega}',\vec{\omega}) = \frac{dL_{r}(x,\vec{\omega})}{dE_{i}(x,\vec{\omega}')} = \frac{dL_{r}(x,\vec{\omega})}{L_{i}(x,\vec{\omega}')(\vec{\omega}' \cdot \vec{n}) d \vec{\omega}'}
+$$</p>
+<p>BRDFは，点$x$に$\vec{\omega}'$ 方向から入射した光のどれだけが，$\vec{\omega}$方向に反射されるかを表す割合．
+一般的に反射の特徴は，「物体表面の材質」と「光の当たり方」の２つで決まってきます．「物体表面の材質」の部分は BRDF，「光の当たり方」の部分はコサイン項で定義する．</p>
+<h2 id="%E5%8F%8D%E5%B0%84%E7%8E%87">反射率</h2>
+<p>反射率の定義は，物体表面に入射する放射束と反射される放射束の比で表す．
+反射率は0~1の値になる．</p>
+<p>$$
+\rho(x) = \dfrac{d\phi_r(x)}{d\phi_i(x)}
+$$</p>
+<h2 id="%E5%BC%95%E7%94%A8%E5%8F%82%E8%80%83">引用/参考</h2>
+<p><a href="https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm">SHIMADZU分析計測機器</a></p>
+<p><a href="https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a">基礎からはじめる物理ベースレンダリング</a></p>
+<p><a href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</a></p>
+<p><a href="https://rayspace.xyz/CG/contents/BRDF_BTDF_BSDF/">双方向(反射率|透過率|散乱)分布関数 (B(R|T|S)DF)</a></p>
+
+</body>
+</html>
