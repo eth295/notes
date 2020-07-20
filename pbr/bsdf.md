@@ -7,11 +7,14 @@
 1. [光の性質](#光の性質)        
 1. [光の放射量](#光の放射量) 
 1. [光の測光量](#光の測光量) 
+1. [光の放射量/測光量まとめ](#光の放射量/測光量まとめ) 
 1. [BSDF](#bsdf)
 1. [反射率](#反射率)
 1. [レンダリング方程式](#レンダリング方程式)
 1. [測光量](#測光量)
 1. [引用/参考](#引用参考)
+
+<div style="page-break-before:always"></div>
 
 ## 光の性質
 
@@ -155,6 +158,8 @@ $\mu_0$，$\epsilon_0$はそれぞれ真空の透磁率と誘電率である．
 
 [PBR guide](https://academy.substance3d.com/courses/the-pbr-guide-part-1)より．
 
+<div style="page-break-before:always"></div>
+
 ## 光の放射量
 
 光のもつ物理的なエネルギーは光学において``放射量``と呼ぶ．
@@ -218,6 +223,16 @@ $$
 単位は，[W⋅sr$^{-1}$〕である．
 放射強度は一定の方向に，どの程度の放射束が放出されているのかを表す．
 
+### 放射発散度
+
+放射発散度$M_e$は，放射源が単位面積$dA$当たりに放出する放射束である．
+
+$$
+M_e = \frac{d\Phi}{dA}
+$$
+
+単位は，[W⋅m$^{-2}$]である．
+
 ### 放射輝度
 
 放射輝度$L$は，単位立体角あたり，単位投影面積あたりの放射束である．
@@ -242,6 +257,8 @@ $$
 \Phi = \int_{A} \int_{\Omega_i} L(x,\vec{\omega_i})(\vec{\omega_i} \cdot \vec{n}) d \vec{\omega_i} dx
 $$
 
+<div style="page-break-before:always"></div>
+
 ## 光の測光量
 
 ``測光量``に関しては，[光の放射量](#光の放射量) で述べた．
@@ -255,11 +272,12 @@ $$
 光束は，$\Phi'$は，光の明るさであり，放射量である放射束$\Phi'$を比視感度$V(\lambda)$で評価した値である．
 
 $$
-\Phi' = \int_{\lambda} V(\lambda)\Phi(\lambda)d\lambda
+\Phi' = Km\int_{\lambda} V(\lambda)\Phi(\lambda)d\lambda
 $$
 
 単位は[lm]で表すのが一般的で，[cd$\cdot$sr]に相当する．
 
+$Km$は最大視感効果度と呼ばれる量で，$V(\lambda)=1$とはる波長($\lambda$=555nm)において測光量と放射量を関係付ける値であり，KM=683[lm/W]と規定されている．
 比視感度$V(\lambda)$は，人間の目が各波長ごとの明るさを感じる強さを数値で表したものである．
 
 ### 光度
@@ -268,6 +286,14 @@ $$
 
 $$
 I' = \frac{Phi'}{\omega}
+$$
+
+### 光束発散度
+
+光束発散度$M'_e$とは，単位面積$dA$から発散する光束で，単位は[lm $\cdot$ m$^{-2}$]である．
+
+$$
+M'_e = \frac{Phi'}{dA}
 $$
 
 ### 輝度
@@ -280,7 +306,7 @@ $$
 
 単位は，[cd$\cdot$ m$^{-2}$]である．
 
-## 照度
+### 照度
 
 照度$E'$は，単位面積当たりの光束量で表される．
 
@@ -289,6 +315,26 @@ E' = \frac{Phi'}{m^2}
 $$
 
 単位は，[lx]や[lux]で表すのが一般的だが，[lm$\cdot$m$^{-2}$]である．
+
+<div style="page-break-before:always"></div>
+
+## 光の放射量/測光量まとめ
+
+光の放射量と測光量についてまとめると，下記の表になる．
+
+<div style="text-align: center;">
+
+| 項目 | 放射量  | 測光量  | 式 |
+|:---:|:---:|:---:|:---:|:---:|
+| 単位時間あたりの<br>エネルギー  | 放射束<br>Radiant flux<br> [W] | 光束<br>Luminous flux <br>[lm] | $\Phi = \frac{dQ}{dt}$ |
+| 立体各あたりの<br>エネルギー  | 放射強度<br>Radiant intensity <br>[W/sr] | 光度<br>Luminous intensity<br> [cd] | $I=\frac{d\Phi}{d\omega}$ | 
+| 放射する<br>面積当たりの<br>エネルギー  | 放射発散度<br>Radiant emittance<br> [W/m$^2$] | 光束発散度<br>Luminous radiance<br> [rlx] | $M=\frac{d\Phi}{dA}$ | 
+| 放射される<br>面積当たりの<br>エネルギー | 放射照度<br>Irradiance<br>[W/m$^2$] | 照度<br>Illuminance<br> [lx] | $E=\frac{d\Phi}{dA}$ | 
+| 立体角・面積あたりの<br>エネルギー  | 放射輝度<br>radiance<br> [W/m$^2$/sr] | 輝度<br>Luminance<br>[cd/m$^2$]| $L=\frac{d^2\Phi}{cos \theta dA d \omega}$ | 
+
+</div>
+
+<div style="page-break-before:always"></div>
 
 ## BSDF
 
@@ -333,6 +379,8 @@ $$
 \int_{\Omega} f_{r}(x,\vec{\omega_i},\vec{\omega_o})(\vec{\omega_i} \cdot \vec{n}) d \vec{\omega_i} \leq 1, \forall \vec{\omega_i} \in \Omega
 $$
 
+<div style="page-break-before:always"></div>
+
 ## BTDF
 
 物体表面における透過現象のモデル化としてBidirectional Transmittance Distribution Function (BTDF, 双方向透過率分布関数)が考えられる．
@@ -363,6 +411,8 @@ BRDFとBTDF両方を合わせたものをBidirectional Scattering Distribution F
 $$
 f_s(x, \vec{\omega_i}, \vec{\omega_o}) = f_r(x, \vec{\omega_i}, \vec{\omega_o}) +f_t(x, \vec{\omega_i}, \vec{\omega_o}) 
 $$
+
+<div style="page-break-before:always"></div>
 
 ## 反射率
 
@@ -508,6 +558,8 @@ $$
 
 分光反射率を求める際などは，拡散反射光で測定することが一般的である．
 
+<div style="page-break-before:always"></div>
+
 ## レンダリング方程式
 
 位置$x$から出射する光は，表面から放射される光と反射される光の和で求められる．
@@ -517,6 +569,8 @@ $$
 今後追加予定．
 
 BRDFのモデルも代表的なものは勉強したい．
+
+<div style="page-break-before:always"></div>
 
 ## 引用/参考
 
