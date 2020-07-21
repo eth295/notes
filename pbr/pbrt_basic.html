@@ -402,7 +402,29 @@ cos\theta_n \\
 <p><span class="math display">\[
 \rho(x,\vec{\omega_i}, \vec{\omega_o}) = |\vec{\omega_i} \cdot \vec{n}| d\vec{\omega_i} \frac{\int_{\Omega} f_{r}(x,\vec{\omega_i},\vec{\omega_o}) |cos\theta_o| d\vec{\omega_o}}{|\vec{\omega_i} \cdot \vec{n}| d\vec{\omega_i}} = \int_{\Omega} f_{r}(x,\vec{\omega_i},\vec{\omega_o}) |cos\theta_o| d\vec{\omega_o}
 \]</span></p>
-<h2 data-number="8.4" id="角度パラメータによる反射率の表現"><span class="header-section-number">8.4</span> 角度パラメータによる反射率の表現</h2>
+<h2 data-number="8.4" id="入射光を規定した場合における反射率の表現"><span class="header-section-number">8.4</span> 入射光を規定した場合における反射率の表現</h2>
+<p>ここで，出射光を切り取る立体角を<span class="math inline">\(\Omega\)</span>毎分けると下記のように反射率を定義することができる．</p>
+<ul>
+<li>全光線反射光の反射率</li>
+</ul>
+<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を半球全てとした場合 鏡面反射光と拡散反射光を合わせた全光線反射光で反射率を定義することになる． 積分球を使用してこの反射率を測定することがある．</p>
+<ul>
+<li>角度毎の反射率</li>
+</ul>
+<p>出射光を切り取る微小立体角<span class="math inline">\(\Omega\)</span>で指定すると，その角度における反射率となる．</p>
+<ul>
+<li>鏡面反射光の反射率</li>
+</ul>
+<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を鏡面反射する立体角とした場合 鏡面反射光における反射率となる． 現実では，物体表面には粗さがあるため，鏡面反射方向に拡散する(拡がりを持つ)ということを考慮しなければならない．</p>
+<ul>
+<li>拡散光の反射率</li>
+</ul>
+<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を拡散反射する立体角とした場合，拡散反射光における反射率となる．</p>
+<p>分光反射率を求める際などは，拡散反射光で測定することが一般的である．</p>
+<div style="page-break-before:always">
+
+</div>
+<h2 data-number="8.5" id="角度パラメータによる反射率の表現"><span class="header-section-number">8.5</span> 角度パラメータによる反射率の表現</h2>
 <p>角度パラメータを使い，反射率を表現する．</p>
 <p>まず微笑立体角<span class="math inline">\(d\omega_o\)</span>を考える． 微小角度<span class="math inline">\(\theta_o \rightarrow \theta_o + d\theta_o\)</span>, <span class="math inline">\(\phi_o \rightarrow \phi_o + d\phi_o\)</span>に対し面積の微小変化<span class="math inline">\(dA\)</span>は下記のようにあわわす事ができる．</p>
 <p><span class="math display">\[
@@ -421,31 +443,6 @@ d\omega_o = sin\theta_o d \theta_o d \phi_o
 <p><span class="math display">\[
 \rho(x, \theta_i, \phi_i, \theta_o, \phi_o) = \int_{\theta_o} \int_{\phi_o}f_{r}(x, \theta_i, \phi_i, \theta_o, \phi_o) |cos\theta_o| |sin\theta_o| d \theta_o d \phi_o
 \]</span></p>
-<h2 data-number="8.5" id="入射光を規定した場合における反射率の表現"><span class="header-section-number">8.5</span> 入射光を規定した場合における反射率の表現</h2>
-<p>ここで，出射光を切り取る立体角を<span class="math inline">\(\Omega\)</span>毎分けると下記のように反射率を定義することができる．</p>
-<ul>
-<li>全光線反射光の反射率</li>
-</ul>
-<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を半球全てとした場合 鏡面反射光と拡散反射光を合わせた全光線反射光で反射率を定義することになる． 積分球を使用してこの反射率を測定することがある．</p>
-<ul>
-<li>角度毎の反射率</li>
-</ul>
-<p>出射光を切り取る微小立体角<span class="math inline">\(\Omega\)</span>で指定すると，その角度における反射率となる． その場合，反射率<span class="math inline">\(\rho(x,\vec{\omega_i}, \vec{\omega_o})\)</span>は下記の式で表すことができる．</p>
-<p><span class="math display">\[
-\rho(x,\vec{\omega_i}, \vec{\omega_o}) = f_{r}(x,\vec{\omega_i},\vec{\omega_o}) |cos\theta_o|d\vec{\omega_o}
-\]</span></p>
-<ul>
-<li>鏡面反射光の反射率</li>
-</ul>
-<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を鏡面反射する立体角とした場合 鏡面反射光における反射率となる． 現実では，物体表面には粗さがあるため，鏡面反射方向に拡散する(拡がりを持つ)ということを考慮しなければならない．</p>
-<ul>
-<li>拡散光の反射率</li>
-</ul>
-<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を拡散反射する立体角とした場合，拡散反射光における反射率となる．</p>
-<p>分光反射率を求める際などは，拡散反射光で測定することが一般的である．</p>
-<div style="page-break-before:always">
-
-</div>
 <h1 data-number="9" id="レンダリング方程式"><span class="header-section-number">9</span> レンダリング方程式</h1>
 <p>位置<span class="math inline">\(x\)</span>から出射する光は，表面から放射される光と反射される光の和で求められる．</p>
 <p>．．．</p>
