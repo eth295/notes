@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>pbrt_basic</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p><span style="font-size: 250%;"><b>ゼロから始める物理ベースレンダリングの勉強</b></span></p>
+<p><span style="font-size: 180%;"><b>概要</b></span></p>
+<p>基本的なことを勉強した後に，オープンソースのレンダラで遊びたいなと思っています． 物理ベースレンダリングを理解するための学習に関するまとめ内容です． 筆者が学習したことをまとめて後から見返す目的なので分かりづらい点もあると思いますがご了承下さい．</p>
+<p>内容としては，光に関する基礎知識から光の反射と透過について触れた後にレンダリングについて説明を追記していく予定です．</p>
+<p><span style="font-size: 180%;"><b>目次</b></span></p>
+<ol type="1">
+<li><a href="#光の性質">光の性質</a><br />
+</li>
+<li><a href="#光の放射量">光の放射量</a></li>
+<li><a href="#光の測光量">光の測光量</a></li>
+<li><a href="#光の放射量/測光量まとめ">光の放射量/測光量まとめ</a></li>
+<li><a href="#bsdf">BSDF</a></li>
+<li><a href="#反射率と透過率">反射率と透過率</a></li>
+<li><a href="#レンダリング方程式">レンダリング方程式</a></li>
+<li><a href="#引用参考">引用/参考</a></li>
+</ol>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="1" id="光の性質"><span class="header-section-number">1</span> 光の性質</h1>
+<p>光は<code>波</code>と<code>粒子</code>の二面性を持つ．</p>
+<h2 data-number="1.1" id="電磁波としての光"><span class="header-section-number">1.1</span> 電磁波としての光</h2>
+<p>波として光を捉える場合は，光は電磁波の一種と考える． 電磁波は電場と地場の変化によって作られる波であり，光のエネルギーを放出または伝達する． この現象を放射と呼ぶ． 真空中を電場と磁場が垂直に絡まり合いながら進行していくものが光である． 電場または磁場の山から山の長さが波長となる． 太陽や電球などの光源から電磁波が発生し，大気中で散乱や吸収されながら進み，物体表面にぶつかって反射が起こる． 光は媒質によって伝搬される．媒質となる物体を媒体と呼ぶ．</p>
+<p align="center">
+<img src="./imgs/light.png">
+</p>
+<p><dev align="center"></p>
+<p><a href="https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm">島津製作所の分析計測機器</a>より．</p>
+<p></dev></p>
+<h2 data-number="1.2" id="粒子としての光"><span class="header-section-number">1.2</span> 粒子としての光</h2>
+<p>光は粒子としての側面も持つ．粒子的な側面を強調すると，光を<code>光子</code>と呼ぶ． 金属に光を当てた時に，金属の表面から電子が飛び出す．この現象を<code>光電効果</code>と呼ぶ． 飛び出した電子を光電子と呼ぶ． 強い光を金属に当てても電子は飛び出さないが，波長の短い光を当てると電子が飛び出す． 当てる光の波長を短くすると，飛び出す電子の数は変わらず，電子のエネルギーが大きくなる． 光を強くしていくと，飛び出す電子の数が増え，電子のエネルギーは変化しない．</p>
+<p>この現象は，光を波動として捉えると説明ができず，光を粒子として捉えることで説明できる． つまり，光が粒子として金属に当たり，電子がはじき出されると考えるということである．</p>
+<p align="center">
+<img src="imgs/light_elect.png">
+</p>
+<p><a href="https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm">島津製作所の分析計測機器</a>より．</p>
+<h2 data-number="1.3" id="光の直進"><span class="header-section-number">1.3</span> 光の直進</h2>
+<p>光を電磁波の一種と捉えると，障害物がなく均一な物体の中を通る限りは直進する． 光の速度は299792458[m/s]である．</p>
+<h2 data-number="1.4" id="光の反射"><span class="header-section-number">1.4</span> 光の反射</h2>
+<p>光は金属などの表面で<code>鏡面反射</code>する． この時，反射の法則により完全に平坦な表面上においては，入ってきた光と反射する光の角度が等しくなる(<code>完全反射</code>)． 表面に凹凸がある場合は様々な方向に反射される(<code>乱反射</code>)．</p>
+<h2 data-number="1.5" id="光の屈折"><span class="header-section-number">1.5</span> 光の屈折</h2>
+<p>光は通り抜ける物体によって速度が変わる． そのため，密度の違う物質の境界では屈折する．</p>
+<h2 data-number="1.6" id="光の吸収"><span class="header-section-number">1.6</span> 光の吸収</h2>
+<p>物質には特定の波長の光を吸収する性質がある． 光が吸収されると多くの場合，そのエネルギーは熱に変わる． 変化した量に応じて光の強さは減衰し，光の色はその波長に応じて吸収された光量だけ変化するが，光線の方向は変わらない．</p>
+<h2 data-number="1.7" id="光の散乱"><span class="header-section-number">1.7</span> 光の散乱</h2>
+<p>吸収とは光のエネルギーが物質との相互作用によって，他のエネルギーに変わることがある．</p>
+<h2 data-number="1.8" id="光線"><span class="header-section-number">1.8</span> 光線</h2>
+<p>光線がある表面に当たると，以下のいずれかもしくは両方が発生する．</p>
+<p>反射：光線が表面で反射し，異なる方向へ進行する．反射の法則に従えば反射角は入射角に等しくなる．</p>
+<p>屈折：光線は表面で速度が代わり，屈折して一方の媒体から別の媒体へと通り抜ける．</p>
+<h2 data-number="1.9" id="反射"><span class="header-section-number">1.9</span> 反射</h2>
+<p>入射光と反射光の関係は下記の通りである．</p>
+<p align="center">
+<img src="imgs/angle_incidence.png">
+</p>
+<p><a href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</a>より．</p>
+<h2 data-number="1.10" id="鏡面反射"><span class="header-section-number">1.10</span> 鏡面反射</h2>
+<p>物体表面における反射光を鏡面反射光と呼ぶ． 凹凸のない表面にぶつかると，入射角と反射角は同じになる． 一般的な物体は多少凹凸があるため，反射光は鏡面反射方向に拡散し，反射した光はぼやけて見える． 一方，物体表面が滑らかな場合は収束し，反射した光は鮮明になる．</p>
+<p align="center">
+<img src="imgs/specular.png">
+</p>
+<p><a href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</a>より．</p>
+<h2 data-number="1.11" id="屈折"><span class="header-section-number">1.11</span> 屈折</h2>
+<p>光線は表面で速度が代わり，屈折して一方の媒体から別の媒体へと通り抜ける． この際の速度変化の指標が<code>屈折率(Index of refraction:IOR)</code>である． 屈折率の定義は下記の通りである．</p>
+<p><span class="math display">\[
+n = \dfrac{c}{v} = \sqrt{\dfrac{\epsilon \mu} {\epsilon_0 \mu_0}}
+\]</span></p>
+<p>ここで，<span class="math inline">\(\mu\)</span>，<span class="math inline">\(\epsilon\)</span>はそれぞれ材質の透磁率<span class="math inline">\([H/m]\)</span>と誘電率<span class="math inline">\([F/m]\)</span>である． <span class="math inline">\(\mu_0\)</span>，<span class="math inline">\(\epsilon_0\)</span>はそれぞれ真空の透磁率と誘電率である．</p>
+<p>下記が光の屈折の例．ストローが曲がって見える．</p>
+<p align="center">
+<img src="imgs/refraction.png">
+</p>
+<p><a href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</a>より．</p>
+<h2 data-number="1.12" id="拡散反射"><span class="header-section-number">1.12</span> 拡散反射</h2>
+<p>光線が別の媒体に入り，その媒体内部で散乱や吸収を起こし，元の媒体に出射される光を拡散反射光と呼ぶ．</p>
+<p align="center">
+<img src="imgs/scattering.png">
+</p>
+<p><a href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</a>より．</p>
+<h2 data-number="1.13" id="微小面"><span class="header-section-number">1.13</span> 微小面</h2>
+<p>光線が物体表面にぶつかって反射する方向は，物体表面の凹凸に依存する． 小さな凹凸を微笑面(microfacet)と呼び，微小面の傾きから物体表面の粗さを計算する． 各微小面は完全鏡面反射すると考えることがある． この考え方では，微小面により光が物体表面に到達する直前や，反射直後に近傍の打ったい表面により遮られる現象が起きる． この現象をローカルオクリュージョンと呼び，ローカルオクリュージョンはセルフシャドウイングとセルフルマスキングがある． セルフシャドウイングは光が物体表面に到達するまでの間に物体表面によって遮られる現象である． セルフマスキングは光が物体表面で反射された後に物体表面から遠ざかる間に遮られる現象である．</p>
+<p align="center">
+<img src="imgs/blurred_reflections.png">
+</p>
+<p><a href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</a>より．</p>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="2" id="光の放射量"><span class="header-section-number">2</span> 光の放射量</h1>
+<p>光のもつ物理的なエネルギーは光学において<code>放射量</code>と呼ぶ． ここでは，<code>放射量</code>について説明する．</p>
+<p>人間は光の波長に応じて感度が異なり，波長の違いは色として知覚される． 人間の眼を通した光の量を<code>測光量</code>といい，測光学の扱いになる． <code>測光量</code>に関しては，<a href="#光の測光量">光の測光量</a> で述べる．</p>
+<h2 data-number="2.1" id="放射束"><span class="header-section-number">2.1</span> 放射束</h2>
+<p>光の基本単位は光子で，放射エネルギー<span class="math inline">\(Q\)</span>は，光子が集まったエネルギーである． このエネルギーを単位時間あたりで表したものが放射束<span class="math inline">\(\phi\)</span>である．</p>
+<p><span class="math display">\[
+\Phi = \frac{\Delta Q}{\Delta d} = \frac{dQ}{dt}
+\]</span></p>
+<p>単位は，[W]である．</p>
+<h2 data-number="2.2" id="放射照度"><span class="header-section-number">2.2</span> 放射照度</h2>
+<p>放射照度<span class="math inline">\(E\)</span>は単位面積あたりの放射束． ある微小面積<span class="math inline">\(dA\)</span>に到達する放射束を<span class="math inline">\(d\Phi\)</span>とすると，放射照度<span class="math inline">\(E\)</span>は次のようになる．</p>
+<p><span class="math display">\[
+E = \frac{d\Phi}{dA}
+\]</span></p>
+<p>単位は，[W⋅m<span class="math inline">\(^{-2}\)</span>]である．</p>
+<p>なお，照度を[lux]もしくは[lx]で表すこともある．</p>
+<h2 data-number="2.3" id="立体角"><span class="header-section-number">2.3</span> 立体角</h2>
+<p>立体角は，方向と光線の角度的な大きさを表す． 立体角の単位はステラジアン[sr]である． 立体角は平面角を３次元に拡張したものと考えることができる． 面角<span class="math inline">\(\theta\)</span>は，円上に張られた弧の長さ<span class="math inline">\(l\)</span>を円の半径 <span class="math inline">\(r\)</span>で割ったものである．</p>
+<p><span class="math display">\[
+\theta = \frac{l}{r}
+\]</span></p>
+<p>これを３次元で考えると，半径<span class="math inline">\(r\)</span>の球面上の面積<span class="math inline">\(A\)</span>に対応する立体角<span class="math inline">\(\omega\)</span>は<span class="math inline">\(\omega = A/r^2\)</span>となる．</p>
+<p align="center">
+<img src="https://qiita-image-store.s3.amazonaws.com/0/133092/6b3b6698-8b59-5e0b-37d1-61d4a9c192dc.png">
+</p>
+<p><a href="https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a">基礎からはじめる物理ベースレンダリング</a>より．</p>
+<h2 data-number="2.4" id="放射強度"><span class="header-section-number">2.4</span> 放射強度</h2>
+<p>放射強度<span class="math inline">\(I\)</span>は，立体角（<span class="math inline">\(d\omega\)</span>）あたりの放射束である．</p>
+<p><span class="math display">\[
+I(\vec{\omega}) = \frac{d \Phi}{d \vec{\omega}}
+\]</span></p>
+<p>単位は，[W⋅sr<span class="math inline">\(^{-1}\)</span>〕である． 放射強度は一定の方向に，どの程度の放射束が放出されているのかを表す．</p>
+<h2 data-number="2.5" id="放射発散度"><span class="header-section-number">2.5</span> 放射発散度</h2>
+<p>放射発散度<span class="math inline">\(M_e\)</span>は，放射源が単位面積<span class="math inline">\(dA\)</span>当たりに放出する放射束である．</p>
+<p><span class="math display">\[
+M = \frac{d\Phi}{dA}
+\]</span></p>
+<p>単位は，[W⋅m<span class="math inline">\(^{-2}\)</span>]である．</p>
+<h2 data-number="2.6" id="放射輝度"><span class="header-section-number">2.6</span> 放射輝度</h2>
+<p>放射輝度<span class="math inline">\(L\)</span>は，単位立体角あたり，単位投影面積あたりの放射束である． 単位投影面積<span class="math inline">\(\cos\theta dA\)</span>は，光が進む方向に直交する面へ単位面積を投影したもので，放射輝度はこの単位投影面積で放射強度を割った値である． ここでは，物体の位置<span class="math inline">\(x\)</span>における放射輝度<span class="math inline">\(L(x,\vec{\omega}_i)\)</span>を考える．</p>
+<p><span class="math display">\[
+L(x,\vec{\omega}_i) = \frac{d^2 \Phi}{\cos \theta dA d \vec{\omega}_i}
+\]</span></p>
+<p>単位は，[W⋅sr<span class="math inline">\(^{-1}\)</span> ⋅m <span class="math inline">\(^{-2}\)</span>]である．</p>
+<p align="center">
+<img src="https://qiita-image-store.s3.amazonaws.com/0/133092/df28d51d-4563-a29d-6be4-f63adaf009dc.png">
+</p>
+<p><a href="https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a">基礎からはじめる物理ベースレンダリング</a>より．</p>
+<p>物体表面における入射してくる放射輝度がわかっていれば，半球面上のすべての方向 <span class="math inline">\(\Omega\)</span>と物体表面の領域<span class="math inline">\(A\)</span> で積分することにより，放射束を計算することができる．</p>
+<p><span class="math display">\[
+\Phi = \int_{A} \int_{\Omega_i} L(x,\vec{\omega_i})(\vec{\omega_i} \cdot \vec{n}) d \vec{\omega_i} dx
+\]</span></p>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="3" id="光の測光量"><span class="header-section-number">3</span> 光の測光量</h1>
+<p><code>測光量</code>に関しては，<a href="#光の放射量">光の放射量</a> で述べた．</p>
+<p>人間は光の波長に応じて感度が異なり，波長の違いは色として知覚される． 人間の眼を通した光の量を<code>測光量</code>といい，測光学の扱いになる． ここでは，測光量について説明する．</p>
+<h2 data-number="3.1" id="光束"><span class="header-section-number">3.1</span> 光束</h2>
+<p>光束は，光の明るさであり，波長<span class="math inline">\(\lambda\)</span>における放射量である放射束<span class="math inline">\(\Phi(\lambda)\)</span>を比視感度<span class="math inline">\(V(\lambda)\)</span>で評価した値である．</p>
+<p>ここでは，放射束は<span class="math inline">\(\Phi\)</span>とし，光束は<span class="math inline">\(\Phi&#39;\)</span>として区別して表記する．</p>
+<p><span class="math display">\[
+\Phi&#39; = Km\int_{\lambda} V(\lambda)\Phi(\lambda)d\lambda
+\]</span></p>
+<p>単位は[lm]で表す．</p>
+<p><span class="math inline">\(Km\)</span>は最大視感効果度と呼ばれる量で，<span class="math inline">\(V(\lambda)=1\)</span>とはる波長(<span class="math inline">\(\lambda\)</span>=555nm)において測光量と放射量を関係付ける値であり，KM=683[lm/W]と規定されている． 比視感度<span class="math inline">\(V(\lambda)\)</span>は，人間の目が各波長ごとの明るさを感じる強さを数値で表したものである．</p>
+<h2 data-number="3.2" id="光度"><span class="header-section-number">3.2</span> 光度</h2>
+<p>光度<span class="math inline">\(I&#39;\)</span>は，単位立体角当たりの光束で単位は[cd]である．</p>
+<p><span class="math display">\[
+I&#39; = \frac{d\Phi&#39;}{d\omega}
+\]</span></p>
+<h2 data-number="3.3" id="光束発散度"><span class="header-section-number">3.3</span> 光束発散度</h2>
+<p>光束発散度<span class="math inline">\(M&#39;\)</span>とは，単位面積<span class="math inline">\(dA\)</span>から発散する光束で，単位は[lm <span class="math inline">\(\cdot\)</span> m<span class="math inline">\(^{-2}\)</span>]である．</p>
+<p><span class="math display">\[
+M&#39;_e = \frac{d\Phi&#39;}{dA}
+\]</span></p>
+<h2 data-number="3.4" id="照度"><span class="header-section-number">3.4</span> 照度</h2>
+<p>照度<span class="math inline">\(E&#39;\)</span>は，単位面積<span class="math inline">\(dA\)</span>当たりに照射される光束量で表される．</p>
+<p><span class="math display">\[
+E&#39; = \frac{d\Phi&#39;}{dA}
+\]</span></p>
+<p>単位は，[lx]や[lux]で表すのが一般的だが，[lm<span class="math inline">\(\cdot\)</span>m<span class="math inline">\(^{-2}\)</span>]である．</p>
+<h2 data-number="3.5" id="輝度"><span class="header-section-number">3.5</span> 輝度</h2>
+<p>輝度は<span class="math inline">\(L&#39;\)</span>は単位面積・単位立体角当たりの光束量で定義される．</p>
+<p><span class="math display">\[
+L&#39; = \frac{d^2\Phi&#39;}{cos\theta dAd\omega}
+\]</span></p>
+<p>単位は，[cd<span class="math inline">\(\cdot\)</span> m<span class="math inline">\(^{-2}\)</span> <span class="math inline">\(\cdot\)</span> sr]である．</p>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="4" id="光の放射量測光量まとめ"><span class="header-section-number">4</span> 光の放射量/測光量まとめ</h1>
+<p>光の放射量と測光量についてまとめると，下記の表になる．</p>
+<div data-align="center">
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">項目</th>
+<th style="text-align: center;">放射量<br>Radiometric quantity</th>
+<th style="text-align: center;">測光量<br>Photometric amount</th>
+<th style="text-align: center;">式</th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">単位時間あたりの<br>エネルギー</td>
+<td style="text-align: center;">放射束<br>Radiant flux<br> [W]</td>
+<td style="text-align: center;">光束<br>Luminous flux <br>[lm]</td>
+<td style="text-align: center;"><span class="math inline">\(\Phi = \frac{dQ}{dt}\)</span></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">立体角あたりの<br>エネルギー</td>
+<td style="text-align: center;">放射強度<br>Radiant intensity <br>[W/sr]</td>
+<td style="text-align: center;">光度<br>Luminous intensity<br> [cd]</td>
+<td style="text-align: center;"><span class="math inline">\(I=\frac{d\Phi}{d\omega}\)</span></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">放射する<br>面積当たりの<br>エネルギー</td>
+<td style="text-align: center;">放射発散度<br>Radiant emittance<br> [W/m<span class="math inline">\(^2\)</span>]</td>
+<td style="text-align: center;">光束発散度<br>Luminous radiance<br> [rlx]</td>
+<td style="text-align: center;"><span class="math inline">\(M=\frac{d\Phi}{dA}\)</span></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">放射される<br>面積当たりの<br>エネルギー</td>
+<td style="text-align: center;">放射照度<br>Irradiance<br>[W/m<span class="math inline">\(^2\)</span>]</td>
+<td style="text-align: center;">照度<br>Illuminance<br> [lx]</td>
+<td style="text-align: center;"><span class="math inline">\(E=\frac{d\Phi}{dA}\)</span></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">立体角・面積あたりの<br>エネルギー</td>
+<td style="text-align: center;">放射輝度<br>radiance<br> [W/m<span class="math inline">\(^2\)</span>/sr]</td>
+<td style="text-align: center;">輝度<br>Luminance<br>[cd/m<span class="math inline">\(^2\)</span>/sr]</td>
+<td style="text-align: center;"><span class="math inline">\(L=\frac{d^2\Phi}{cos \theta dA d \omega}\)</span></td>
+<td style="text-align: center;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="5" id="bsdf"><span class="header-section-number">5</span> BSDF</h1>
+<p>ここでは，BSDF(双方向散乱分布関数)について説明する．</p>
+<h2 data-number="5.1" id="brdf"><span class="header-section-number">5.1</span> BRDF</h2>
+<p>物体表面における透過現象のモデル化として，双方向反射率分布関数（bidirectional reflectance distribution function：BRDF）がある． なお，BRDFを空間的な位置毎に扱う場合は，SVBRDF(Spatially varing BRDF)と呼ぶ．</p>
+<p>BRDF<span class="math inline">\(f_{r}\)</span>は，反射される放射輝度と放射照度の関係を以下のように定義する．</p>
+<p><span class="math display">\[
+f_{r}(x,\vec{\omega_i},\vec{\omega_o}) = \frac{dL_{r}(x,\vec{\omega_o})}{dE_{i}(x,\vec{\omega_i})} = \frac{dL_{r}(x,\vec{\omega_o})}{L_{i}(x,\vec{\omega_i})(\vec{\omega_i} \cdot \vec{n}) d \vec{\omega_i}}
+\]</span></p>
+<p>BRDFは，点<span class="math inline">\(x\)</span>に<span class="math inline">\(\vec{\omega_i}\)</span> 方向から入射した光のどれだけが，<span class="math inline">\(\vec{\omega_o}\)</span>方向に反射されるかを表す割合． 単位は[sr<span class="math inline">\(^{-1}\)</span>]である． BRDFでは，入射方向を実際の光の向きとは逆向きに定義する．</p>
+<p>物体表面上のある位置に入射する放射輝度がわかっていれば，それがあらゆる方向に反射していく放射輝度を計算することができる． これは，入射する放射輝度 <span class="math inline">\(L_{i}\)</span> を積分することによって求められる．</p>
+<p><span class="math display">\[
+L_{r}(x,\vec{\omega_o}) = \int_{\Omega}f_{r}(x,\vec{\omega_i},\vec{\omega_o})dE(x,\vec{\omega_i}) = \int_{\Omega}f_{r}(x,\vec{\omega_i},\vec{\omega_o})L_{i}(x,\vec{\omega_i})(\vec{\omega_i} \cdot \vec{n}) d \vec{\omega_o}
+\]</span></p>
+<h3 data-number="5.1.1" id="brdfの相反性"><span class="header-section-number">5.1.1</span> BRDFの相反性</h3>
+<p>光が進む方向に依存しないというヘルムホルツの相反性の法則を満たしている必要がる． 光が入射する方向と出射する方向が入れ替わってもBRDFの結果は変わらない．</p>
+<p><span class="math display">\[
+f_{r}(x,\vec{\omega_i},\vec{\omega_o}) = f_{r}(x,\vec{\omega_o},\vec{\omega_i})
+\]</span></p>
+<h3 data-number="5.1.2" id="brdfの-エネルギー保存則"><span class="header-section-number">5.1.2</span> BRDFの エネルギー保存則</h3>
+<p>物体表面は，それが受けた以上の光を反射することはできず，以下の式を満たさなければない．</p>
+<p><span class="math display">\[
+\int_{\Omega} f_{r}(x,\vec{\omega_i},\vec{\omega_o})(\vec{\omega_i} \cdot \vec{n}) d \vec{\omega_i} \leq 1, \forall \vec{\omega_i} \in \Omega
+\]</span></p>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="6" id="btdf"><span class="header-section-number">6</span> BTDF</h1>
+<p>物体表面における透過現象のモデル化としてBidirectional Transmittance Distribution Function (BTDF, 双方向透過率分布関数)が考えられる． これはBRDFの透過版であり，透過する放射輝度<span class="math inline">\(dL_t\)</span>を用いて下記のように表される．</p>
+<p><span class="math display">\[
+f_t(x, \vec{\omega_i}, \vec{\omega_o}) = \frac{dL_t(x,\vec{\omega_o})}{dE_i(\vec{x}, \vec{\omega_i})}
+\]</span></p>
+<p>単位は[sr<span class="math inline">\(^{-1}\)</span>]である．</p>
+<p>このBRDFが相反性を持つのに対して，BTDFはヘルムホルツの相反性を持たない． 屈折率の高い物質に光が半球上の全方向から入射することを考えた場合，それらの光は界面を挟んで反対側では半球よりも小さな範囲へと透過する． そのため明らかに光の密度、つまり放射輝度に変化が生じる． これより透過の場合には入射方向，出射方向を入れ替えても相反性が成り立たない． そこで，入射側と出射側の屈折率をそれぞれ<span class="math inline">\(\eta_i\)</span>, <span class="math inline">\(\eta_o\)</span>で表すとBTDFは次の関係を持ちます</p>
+<p><span class="math display">\[
+\frac{f_t(x, \vec{\omega_i}, \vec{\omega_o})}{\eta_o^2} = \frac{f_t(x, \vec{\omega_o}, \vec{\omega_i})}{\eta_i^2}
+\]</span></p>
+<p>エネルギー保存則については，BRDFと同様である．</p>
+<h1 data-number="7" id="bsdf-1"><span class="header-section-number">7</span> BSDF</h1>
+<p>BRDFとBTDF両方を合わせたものをBidirectional Scattering Distribution Function (BSDF, 双方向散乱分布関数)と呼ぶ．</p>
+<p><span class="math display">\[
+f_s(x, \vec{\omega_i}, \vec{\omega_o}) = f_r(x, \vec{\omega_i}, \vec{\omega_o}) +f_t(x, \vec{\omega_i}, \vec{\omega_o}) 
+\]</span></p>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="8" id="反射率と透過率"><span class="header-section-number">8</span> 反射率と透過率</h1>
+<p>物体の位置<span class="math inline">\(x\)</span>における反射率と透過率は，物体表面に入射する放射束と反射(透過)する放射束の比で表す．</p>
+<p><span class="math display">\[
+\rho(x) = \dfrac{d\phi_r(x)}{d\phi_i(x)}
+\]</span></p>
+<p>これを各波長毎に算出することで，分光反射(透過)率を求めることができる． それぞれ値は0~1の値になる．</p>
+<p>これ以降，反射率で説明を進めるが，透過率も同様の方法で計算可能である．</p>
+<h2 data-number="8.1" id="brdfを元にした反射率"><span class="header-section-number">8.1</span> BRDFを元にした反射率</h2>
+<p>物体の位置<span class="math inline">\(x\)</span>での微小面積<span class="math inline">\(dA\)</span>に立体角<span class="math inline">\(\vec{\omega_i}\)</span>の範囲を通過して光が入射するとき入射する放射束<span class="math inline">\(d\phi_i\)</span>は次の式で表すことができる。</p>
+<p><span class="math display">\[
+d\phi_i(x) = dA \cdot \int_{\omega_i} L_i(x, \vec{\omega_i}) |\vec{\omega_i} \cdot \vec{n}|  d\vec{\omega_i}
+\]</span></p>
+<p>反射する放射束のうち立体角<span class="math inline">\(\vec{\omega_o}\)</span>を通過する量<span class="math inline">\(d\phi_r\)</span>は次の式で表すことができる．</p>
+<p><span class="math display">\[
+d\phi_r(x) = dA \cdot \int_{\omega_o} L_r(x, \vec{\omega_o}) |\vec{\omega_o} \cdot \vec{n}|  d\vec{\omega_o}
+\]</span></p>
+<p>位置<span class="math inline">\(x\)</span>における入射する放射輝度<span class="math inline">\(L_i(\vec{\omega_i})\)</span>とBRDF<span class="math inline">\(f_{r}(x,\vec{\omega_i},\vec{\omega_o})\)</span>を使うと，反射する放射束は下記のように表すことができる．</p>
+<p><span class="math display">\[
+d\phi_r(x) = dA \cdot \int_{\omega_o} \int_{\omega_i} f_{r}(x,\vec{\omega_i},\vec{\omega_o}) L_i(x, \vec{\omega_i}) |\vec{\omega_i} \cdot \vec{n}| d\vec{\omega_i} |\vec{\omega_o} \cdot \vec{n}| d\vec{\omega_o}
+\]</span></p>
+<p>以上のことから，一般的な反射率は，立体角<span class="math inline">\(\vec{\omega_i}\)</span>の範囲を通過した光が，物体における位置<span class="math inline">\(x\)</span>で反射し，立体角<span class="math inline">\(\vec{\omega_o}\)</span>を通過するものとして，下記の式で表すことができる．</p>
+<p><span class="math display">\[
+\rho(x,\vec{\omega_i}, \vec{\omega_o},L_i) = \frac{\int_{\omega_o} \int_{\omega_i} f_{r}(x,\vec{\omega_i},\vec{\omega_o}) L_i(x, \vec{\omega_i}) |\vec{\omega_i} \cdot \vec{n}| d\vec{\omega_i} |\vec{\omega_o} \cdot \vec{n}| d\vec{\omega_o}}{\int_{\omega_i} L_i(x, \vec{\omega_i}) |\vec{\omega_i} \cdot \vec{n}|  d\vec{\omega_i}}
+\]</span></p>
+<p>この式により，任意の入射光・出射光の形状，任意の入射放射輝度分布の組み合わせに対する一般的な反射率を表すことができる．</p>
+<h2 data-number="8.2" id="角度パラメータ"><span class="header-section-number">8.2</span> 角度パラメータ</h2>
+<p>ここでは，ベクトル<span class="math inline">\(\vec{\omega_i}\)</span>，<span class="math inline">\(\vec{\omega_o}\)</span>で方向を表している． しかし一般的には，４つのパラメータで表すこともある．</p>
+<p align="center">
+<img src="parameters.png">
+</p>
+<p><a href="http://omilab.naist.jp/~mukaigawa/papers/CVIM2010-Tutorial.pdf">反射・散乱の計測とモデル化</a>より．</p>
+<p>上記のように４つの角度パラメータにおける，各波長のBRDFの値を表すフォーマットとして，<a href="http://www.graphics.cornell.edu/online/measurements/reflectance/index.html">ASTM</a>のフォーマットがある．</p>
+<p>ベクトル<span class="math inline">\(\vec{\omega_i}\)</span>，<span class="math inline">\(\vec{\omega_o}\)</span>それぞれに角度パラメータ<span class="math inline">\(\theta_i\)</span>,<span class="math inline">\(\phi_i\)</span>,と<span class="math inline">\(\theta_o\)</span>,<span class="math inline">\(\phi_o\)</span>を定義すると，3次元直交座標におけるそれぞれのベクトルを行列にして下記のように表すことができる．</p>
+<p><span class="math display">\[
+\boldsymbol{\omega}_i =\left[ 
+\begin{matrix} 
+sin\theta_i cos\phi_i, \\ 
+sin\theta_i sin\phi_i, \\
+cos\theta_i \\
+\end{matrix}
+\right]
+\]</span></p>
+<p><span class="math display">\[
+\boldsymbol{\omega}_o =\left[ 
+\begin{matrix} 
+sin\theta_o cos\phi_o, \\ 
+sin\theta_o sin\phi_o, \\
+cos\theta_o \\
+\end{matrix}
+\right]
+\]</span></p>
+<p>物体の法線<span class="math inline">\(\vec{n}\)</span>の行列も同様に表現する．</p>
+<p><span class="math display">\[
+\boldsymbol{n} = \left[ 
+\begin{matrix} 
+sin\theta_n cos\phi_n, \\ 
+sin\theta_n sin\phi_n, \\
+cos\theta_n \\
+\end{matrix}
+\right]
+\]</span></p>
+<p>反射率を表す式における内積も，角度パラメータで表すことができる．</p>
+<p><span class="math display">\[
+\vec{\omega_i} \cdot \vec{n} = \boldsymbol{\omega}_i^T \cdot \boldsymbol{n} = sin\theta_i cos\phi_i sin\theta_n cos\phi_n + sin\theta_i sin\phi_i sin\theta_n sin\phi_n  + cos\theta_i cos\theta_n 
+\]</span></p>
+<p><span class="math display">\[
+\vec{\omega_o} \cdot \vec{n} = \boldsymbol{\omega}_o^T \cdot \boldsymbol{n} = sin\theta_o cos\phi_o sin\theta_n cos\phi_n + sin\theta_o sin\phi_o sin\theta_n sin\phi_n  + cos\theta_o cos\theta_n 
+\]</span></p>
+<h2 data-number="8.3" id="平面な物体の反射率"><span class="header-section-number">8.3</span> 平面な物体の反射率</h2>
+<p>物体の法線<span class="math inline">\(\vec{n}\)</span>がz方向のみ(完全に平面な物体)と想定すると，下記のようになる．</p>
+<p><span class="math display">\[
+\boldsymbol{n} = \left[ 
+\begin{matrix} 
+0, \\ 
+0, \\
+1 \\
+\end{matrix}
+\right]
+\]</span></p>
+<p><span class="math display">\[
+\vec{\omega_i} \cdot \vec{n} = cos\theta_i
+\]</span></p>
+<p><span class="math display">\[
+\vec{\omega_o} \cdot \vec{n} = cos\theta_o
+\]</span></p>
+<p>この条件で反射率を表すと，下記のようになる．</p>
+<p><span class="math display">\[
+\rho(x,\vec{\omega_i}, \vec{\omega_o}, L_i) = \frac{\int_{\omega_o} \int_{\omega_i} f_{r}(x,\vec{\omega_i},\vec{\omega_o}) L_i(x, \vec{\omega_i}) |cos\theta_i| d\vec{\omega_i} |cos\theta_o| d\vec{\omega_o}}{\int_{\omega_i} L_i(x, \vec{\omega_i}) |cos\theta_i|  d\vec{\omega_i}}
+\]</span></p>
+<p>また，入射する放射輝度<span class="math inline">\(L_i(x, \vec{\omega_i})\)</span>の分布が等方的である場合は上式は次のようになる．</p>
+<p><span class="math display">\[
+\rho(x,\vec{\omega_i}, \vec{\omega_o}) = \frac{\int_{\omega_o} \int_{\omega_i} f_{r}(x,\vec{\omega_i},\vec{\omega_o})|cos\theta_i| d\vec{\omega_i} |cos\theta_o| d\vec{\omega_o}}{\int_{\omega_i} |cos\theta_i|  d\vec{\omega_i}}
+\]</span></p>
+<p>さらに入射光はある一方向，とした場合の反射率は，上の式において入射光を切り取る立体角を<span class="math inline">\(d\vec{\omega_i}\)</span>，出射光を切り取る立体角を<span class="math inline">\(\Omega\)</span>とした場合に相当し，下記のようになる．</p>
+<p><span class="math display">\[
+\rho(x,\vec{\omega_i}, \vec{\omega_o}) = |\vec{\omega_i} \cdot \vec{n}| d\vec{\omega_i} \frac{\int_{\Omega} f_{r}(x,\vec{\omega_i},\vec{\omega_o}) |cos\theta_o| d\vec{\omega_o}}{|\vec{\omega_i} \cdot \vec{n}| d\vec{\omega_i}} = \int_{\Omega} f_{r}(x,\vec{\omega_i},\vec{\omega_o}) |cos\theta_o| d\vec{\omega_o}
+\]</span></p>
+<h2 data-number="8.4" id="角度パラメータによる反射率の表現"><span class="header-section-number">8.4</span> 角度パラメータによる反射率の表現</h2>
+<p>角度パラメータを使い，反射率を表現する．</p>
+<p>まず微笑立体角<span class="math inline">\(d\omega_o\)</span>を考える． 微小角度<span class="math inline">\(\theta_o \rightarrow \theta_o + d\theta_o\)</span>, <span class="math inline">\(\phi_o \rightarrow \phi_o + d\phi_o\)</span>に対し面積の微小変化<span class="math inline">\(dA\)</span>は下記のようにあわわす事ができる．</p>
+<p><span class="math display">\[
+dA = r^2 sin\theta_o d \theta_o d \phi_o
+\]</span></p>
+<p>立体角の定義より，</p>
+<p><span class="math display">\[
+\omega_o = A/r^2
+\]</span></p>
+<p>となるため，</p>
+<p><span class="math display">\[
+d\omega_o = sin\theta_o d \theta_o d \phi_o
+\]</span></p>
+<p>この式を用いることで，角度パラメータで表現されているBRDFから反射率を算出することが可能である．</p>
+<p>各種パラメータを角度で表現し直すと，反射率は下記のようになる．</p>
+<p><span class="math display">\[
+\rho(x, \theta_i, \phi_i, \theta_o, \phi_o) = \int_{\theta_o} \int_{\phi_o}f_{r}(x, \theta_i, \phi_i, \theta_o, \phi_o) |cos\theta_o| |sin\theta_o| d \theta_o d \phi_o
+\]</span></p>
+<h2 data-number="8.5" id="入射光を規定した場合における反射率の表現"><span class="header-section-number">8.5</span> 入射光を規定した場合における反射率の表現</h2>
+<p>ここで，出射光を切り取る立体角を<span class="math inline">\(\Omega\)</span>毎分けると下記のように反射率を定義することができる．</p>
+<ul>
+<li>全光線反射光の反射率</li>
+</ul>
+<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を半球全てとした場合 鏡面反射光と拡散反射光を合わせた全光線反射光で反射率を定義することになる． 積分球を使用してこの反射率を測定することがある．</p>
+<ul>
+<li>角度毎の反射率</li>
+</ul>
+<p>出射光を切り取る微小立体角<span class="math inline">\(\Omega\)</span>で指定すると，その角度における反射率となる． その場合，反射率<span class="math inline">\(\rho(x,\vec{\omega_i}, \vec{\omega_o})\)</span>は下記の式で表すことができる．</p>
+<p><span class="math display">\[
+\rho(x,\vec{\omega_i}, \vec{\omega_o}) = f_{r}(x,\vec{\omega_i},\vec{\omega_o}) |cos\theta_o|d\vec{\omega_o}
+\]</span></p>
+<ul>
+<li>鏡面反射光の反射率</li>
+</ul>
+<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を鏡面反射する立体角とした場合 鏡面反射光における反射率となる． 現実では，物体表面には粗さがあるため，鏡面反射方向に拡散する(拡がりを持つ)ということを考慮しなければならない．</p>
+<ul>
+<li>拡散光の反射率</li>
+</ul>
+<p>出射光を切り取る立体角<span class="math inline">\(\Omega\)</span>を拡散反射する立体角とした場合，拡散反射光における反射率となる．</p>
+<p>分光反射率を求める際などは，拡散反射光で測定することが一般的である．</p>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="9" id="レンダリング方程式"><span class="header-section-number">9</span> レンダリング方程式</h1>
+<p>位置<span class="math inline">\(x\)</span>から出射する光は，表面から放射される光と反射される光の和で求められる．</p>
+<p>．．．</p>
+<p>今後追加予定．</p>
+<h1 data-number="10" id="brdfのパラメトリックモデル"><span class="header-section-number">10</span> BRDFのパラメトリックモデル</h1>
+<p>代表的なものは理解しておきたい．</p>
+<h2 data-number="10.1" id="brdfのモデル変換"><span class="header-section-number">10.1</span> BRDFのモデル変換</h2>
+<p>最適化問題に落とし込みんでモデルを変換するとかって話は面白そう．</p>
+<h1 data-number="11" id="レンダラ"><span class="header-section-number">11</span> レンダラ</h1>
+<p>レンダラって世の中に沢山ありますよね．</p>
+<h2 data-number="11.1" id="ラスタライザ"><span class="header-section-number">11.1</span> ラスタライザ</h2>
+<p>ラスタライザとは，〜〜〜．</p>
+<h2 data-number="11.2" id="レイトレイサ"><span class="header-section-number">11.2</span> レイトレイサ</h2>
+<p>レイトレイサとは，〜〜〜．</p>
+<h2 data-number="11.3" id="微分可能レンダラ"><span class="header-section-number">11.3</span> 微分可能レンダラ</h2>
+<p>近年は，深層学習の発展に伴い微分可能レンダラに関する研究が盛んに行われている． 〜〜〜．</p>
+<div style="page-break-before:always">
+
+</div>
+<h1 data-number="12" id="引用参考"><span class="header-section-number">12</span> 引用/参考</h1>
+<p><a href="https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm">島津製作所の分析計測機器</a></p>
+<p><a href="https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a">基礎からはじめる物理ベースレンダリング</a></p>
+<p><a href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</a></p>
+<p><a href="https://rayspace.xyz/CG/contents/BRDF_BTDF_BSDF/">双方向(反射率|透過率|散乱)分布関数 (B(R|T|S)DF)</a></p>
+<p><a href="http://omilab.naist.jp/~mukaigawa/papers/CVIM2010-Tutorial.pdf">反射・散乱の計測とモデル化</a></p>
+<p><a href="http://www.graphics.cornell.edu/online/measurements/reflectance/index.html">Reflectance Data by Cornell Univ.</a></p>
+<p><a href="https://www.ushio.co.jp/jp/technology/glossary/">ウシオ電機の光技術用語解説</a></p>
+</body>
+</html>
