@@ -36,15 +36,11 @@
 太陽や電球などの光源から電磁波が発生し，大気中で散乱や吸収されながら進み，物体表面にぶつかって反射が起こる．
 光は媒質によって伝搬される．媒質となる物体を媒体と呼ぶ．
 
-<p align="center">
+<center>
 <img src="./imgs/light.png">
-</p>
 
-<dev align="center">
-
-[島津製作所の分析計測機器](https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm)より．
-
-</dev>
+<A href="https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm">島津製作所の分析計測機器</A>より．
+</center>
 
 ## 粒子としての光
 
@@ -58,39 +54,41 @@
 この現象は，光を波動として捉えると説明ができず，光を粒子として捉えることで説明できる．
 つまり，光が粒子として金属に当たり，電子がはじき出されると考えるということである．
 
-<p align="center">
+<center>
 <img src="imgs/light_elect.png">
-</p>
 
-[島津製作所の分析計測機器](https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm)より．
+<A href="https://www.an.shimadzu.co.jp/uv/support/lib/uvtalk/uvtalk1/basic.htm">島津製作所の分析計測機器</A>より．
+</center>
 
-## 光の直進
+## 光の性質
+
+- 直進
 
 光を電磁波の一種と捉えると，障害物がなく均一な物体の中を通る限りは直進する．
 光の速度は299792458[m/s]である．
 
-## 光の反射
+- 光の反射
 
 光は金属などの表面で``鏡面反射``する．
 この時，反射の法則により完全に平坦な表面上においては，入ってきた光と反射する光の角度が等しくなる(``完全反射``)．
 表面に凹凸がある場合は様々な方向に反射される(``乱反射``)．
 
-## 光の屈折
+- 光の屈折
 
 光は通り抜ける物体によって速度が変わる．
 そのため，密度の違う物質の境界では屈折する．
 
-## 光の吸収
+- 光の吸収
 
 物質には特定の波長の光を吸収する性質がある．
 光が吸収されると多くの場合，そのエネルギーは熱に変わる．
 変化した量に応じて光の強さは減衰し，光の色はその波長に応じて吸収された光量だけ変化するが，光線の方向は変わらない．
 
-## 光の散乱
+- 光の散乱
 
 吸収とは光のエネルギーが物質との相互作用によって，他のエネルギーに変わることがある．
 
-## 光線
+- 光線
 
 光線がある表面に当たると，以下のいずれかもしくは両方が発生する．
 
@@ -98,30 +96,30 @@
 
 屈折：光線は表面で速度が代わり，屈折して一方の媒体から別の媒体へと通り抜ける．
 
-## 反射
+- 反射
 
 入射光と反射光の関係は下記の通りである．
 
-<p align="center">
+<center>
 <img src="imgs/angle_incidence.png">
-</p>
 
-[PBR guide](https://academy.substance3d.com/courses/the-pbr-guide-part-1)より．
+<A href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</A>より．
+</center>
 
-## 鏡面反射
+- 鏡面反射
 
 物体表面における反射光を鏡面反射光と呼ぶ．
 凹凸のない表面にぶつかると，入射角と反射角は同じになる．
 一般的な物体は多少凹凸があるため，反射光は鏡面反射方向に拡散し，反射した光はぼやけて見える．
 一方，物体表面が滑らかな場合は収束し，反射した光は鮮明になる．
 
-<p align="center">
+<center>
 <img src="imgs/specular.png">
-</p>
 
-[PBR guide](https://academy.substance3d.com/courses/the-pbr-guide-part-1)より．
+<A href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</A>より．
+</center>
 
-## 屈折
+- 屈折
 
 光線は表面で速度が代わり，屈折して一方の媒体から別の媒体へと通り抜ける．
 この際の速度変化の指標が``屈折率(Index of refraction:IOR)``である．
@@ -136,23 +134,23 @@ $\mu_0$，$\epsilon_0$はそれぞれ真空の透磁率と誘電率である．
 
 下記が光の屈折の例．ストローが曲がって見える．
 
-<p align="center">
+<center>
 <img src="imgs/refraction.png">
-</p>
 
-[PBR guide](https://academy.substance3d.com/courses/the-pbr-guide-part-1)より．
+<A href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</A>より．
+</center>
 
-## 拡散反射
+- 拡散反射
 
 光線が別の媒体に入り，その媒体内部で散乱や吸収を起こし，元の媒体に出射される光を拡散反射光と呼ぶ．
 
-<p align="center">
+<center>
 <img src="imgs/scattering.png">
-</p>
 
-[PBR guide](https://academy.substance3d.com/courses/the-pbr-guide-part-1)より．
+<A href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</A>より．
+</center>
 
-## 微小面
+- 微小面
 
 光線が物体表面にぶつかって反射する方向は，物体表面の凹凸に依存する．
 小さな凹凸を微笑面(microfacet)と呼び，微小面の傾きから物体表面の粗さを計算する．
@@ -162,11 +160,11 @@ $\mu_0$，$\epsilon_0$はそれぞれ真空の透磁率と誘電率である．
 セルフシャドウイングは光が物体表面に到達するまでの間に物体表面によって遮られる現象である．
 セルフマスキングは光が物体表面で反射された後に物体表面から遠ざかる間に遮られる現象である．
 
-<p align="center">
+<center>
 <img src="imgs/blurred_reflections.png">
-</p>
 
-[PBR guide](https://academy.substance3d.com/courses/the-pbr-guide-part-1)より．
+<A href="https://academy.substance3d.com/courses/the-pbr-guide-part-1">PBR guide</A>より．
+</center>
 
 <div style="page-break-before:always"></div>
 
@@ -216,11 +214,11 @@ $$
 
 これを３次元で考えると，半径$r$の球面上の面積$A$に対応する立体角$\omega$は$\omega = A/r^2$となる．
 
-<p align="center">
+<center>
 <img src="https://qiita-image-store.s3.amazonaws.com/0/133092/6b3b6698-8b59-5e0b-37d1-61d4a9c192dc.png">
-</p>
 
-[基礎からはじめる物理ベースレンダリング](https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a)より．
+<A href="https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a">基礎からはじめる物理ベースレンダリング</A>より．
+</center>
 
 ## 放射強度
 
@@ -255,11 +253,11 @@ $$
 
 単位は，[W⋅sr$^{-1}$ ⋅m $^{-2}$]である．
 
-<p align="center">
+<center>
 <img src="https://qiita-image-store.s3.amazonaws.com/0/133092/df28d51d-4563-a29d-6be4-f63adaf009dc.png">
-</p>
 
-[基礎からはじめる物理ベースレンダリング](https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a)より．
+<A href="https://qiita.com/mebiusbox2/items/e7063c5dfe1424e0d01a">基礎からはじめる物理ベースレンダリング</A>より．
+</center>
 
 物体表面における入射してくる放射輝度がわかっていれば，半球面上のすべての方向 $\Omega$と物体表面の領域$A$ で積分することにより，放射束を計算することができる．
 
@@ -334,6 +332,7 @@ $$
 
 光の放射量と測光量についてまとめると，下記の表になる．
 
+<center>
 <div align="center">
 
 | 項目 | 放射量<br>Radiometric quantity | 測光量<br>Photometric amount | 式 |
@@ -346,6 +345,7 @@ $$
 
 </div>
 
+</center>
 <div style="page-break-before:always"></div>
 
 # BSDF
@@ -393,7 +393,7 @@ $$
 
 <div style="page-break-before:always"></div>
 
-# BTDF
+## BTDF
 
 物体表面における透過現象のモデル化としてBidirectional Transmittance Distribution Function (BTDF, 双方向透過率分布関数)が考えられる．
 これはBRDFの透過版であり，透過する放射輝度$dL_t$を用いて下記のように表される．
@@ -416,7 +416,7 @@ $$
 
 エネルギー保存則については，BRDFと同様である．
 
-# BSDF
+## BSDF
 
 BRDFとBTDF両方を合わせたものをBidirectional Scattering Distribution Function (BSDF, 双方向散乱分布関数)と呼ぶ．
 
@@ -472,11 +472,11 @@ $$
 ここでは，ベクトル$\vec{\omega_i}$，$\vec{\omega_o}$で方向を表している．
 しかし一般的には，４つのパラメータで表すこともある．
 
-<p align="center">
+<center>
 <img src="parameters.png">
-</p>
 
-[反射・散乱の計測とモデル化](http://omilab.naist.jp/~mukaigawa/papers/CVIM2010-Tutorial.pdf)より．
+<A href="http://omilab.naist.jp/~mukaigawa/papers/CVIM2010-Tutorial.pdf">反射・散乱の計測とモデル化</A>より．
+</center>
 
 上記のように４つの角度パラメータにおける，各波長のBRDFの値を表すフォーマットとして，[ASTM](http://www.graphics.cornell.edu/online/measurements/reflectance/index.html)のフォーマットがある．
 
